@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Venta de Tickets de Lotería</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f4f4; padding-top: 20px; }
+        .container { max-width: 800px; }
+        .ticket, .play-entry { border: 1px solid #ddd; border-radius: 4px; padding: 10px; margin-top: 20px; text-align: center; position: relative; background-color: #fff; }
+        .ticket-footer { margin-top: 10px; font-size: 14px; color: #666; }
+        .btn-custom { background-color: #28a745; color: #fff; }
+        .btn-custom:hover { background-color: #218838; }
+        @media (max-width: 576px) {
+            h1, h2, h3, h4, h5, h6 { font-size: 1.2rem; }
+            .container { padding: 0 15px; }
+            .ticket, .play-entry { padding: 10px 5px; }
+            .btn, .form-control { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">BANCA J&L</h1>
+
+        <div class="section">
+            <h2>Compra de Ticket</h2>
+            <form onsubmit="event.preventDefault(); generateTicket();" class="mb-4">
+                <div class="form-group">
+                    <label for="lotteryType">Tipo de Lotería:</label>
+                    <select id="lotteryType" class="form-control">
+                        <option value="La Primera">La Primera</option>
+                        <option value="Lotería REAL">Lotería REAL</option>
+                        <option value="LA SUERTE">LA SUERTE</option>
+                        <option value="Loteka">Loteka</option>
+                        <option value="Leidsa">Leidsa</option>
+                        <option value="Ganamas">Ganamas</option>
+                        <option value="NACIONAL">Nacional</option>
+                        <option value="New York">New York</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="playType">Tipo de Jugada:</label>
+                    <select id="playType" class="form-control">
+                        <option value="simple">Simple</option>
+                        <option value="pale">Pale</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="playNumber">Número a Jugar:</label>
+                    <input type="text" id="playNumber" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="price">Precio:</label>
+                    <input type="number" id="price" class="form-control">
+                </div>
+                <button type="button" class="btn btn-custom mb-2" onclick="addPlay()">Agregar Jugada</button>
+                <div id="plays"></div>
+                <button type="submit" class="btn btn-primary">Generar Ticket</button>
+            </form>
+            <div id="ticket"></div>
+            <button class="btn btn-secondary" onclick="printTicket()">Imprimir Ticket</button>
+        </div>
+
+        <div class="section">
+            <h2>Ingresar Números Ganadores</h2>
+            <form onsubmit="event.preventDefault(); setWinningNumbers();" class="mb-4">
+                <div class="form-group">
+                    <label for="winningLotteryType">Tipo de Lotería:</label>
+                    <select id="winningLotteryType" class="form-control">
+                        <option value="La Primera">La Primera</option>
+                        <option value="Lotería REAL">Lotería REAL</option>
+                        <option value="LA SUERTE">LA SUERTE</option>
+                        <option value="Loteka">Loteka</option>
+                        <option value="Leidsa">Leidsa</option>
+                        <option value="Ganamas">Ganamas</option>
+                        <option value="NACIONAL">Nacional</option>
+                        <option value="New York">New York</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="firstPrize">Primer Premio:</label>
+                    <input type="text" id="firstPrize" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="secondPrize">Segundo Premio:</label>
+                    <input type="text" id="secondPrize" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="thirdPrize">Tercer Premio:</label>
+                    <input type="text" id="thirdPrize" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Números Ganadores</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>Inventario</h2>
+            <button class="btn btn-info mb-2" onclick="viewInventory()">Ver Inventario</button>
+            <div id="inventory"></div>
+        </div>
+
+        <div class="section">
+            <h2>Historial de Transacciones</h2>
+            <button class="btn btn-info mb-2" onclick="viewTransactionHistory()">Ver Historial de Transacciones</button>
+            <div id="transactionHistory"></div>
+        </div>
+
+        <div class="section">
+            <h2>Resumen de Ventas y Pagos</h2>
+            <label for="salesStartDate">Fecha de Inicio:</label>
+            <input type="date" id="salesStartDate">
+            <label for="salesEndDate">Fecha de Fin:</label>
+            <input type="date" id="salesEndDate">
+            <button onclick="viewSalesAndPaymentsByRange()">Ver Resumen</button>
+            <div id="salesAndPayments"></div>
+            <button onclick="sendSalesSummaryEmail()">Enviar Resumen por Correo</button>
+        </div>
+
+        <div class="section">
+            <h2>Pagar Ticket</h2>
+            <form onsubmit="event.preventDefault(); payTicket();" class="mb-4">
+                <div class="form-group">
+                    <label for="ticketCode">Código de Ticket:</label>
+                    <input type="text" id="ticketCode" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Pagar Ticket</button>
+            </form>
+            <div id="paymentResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || {};
+        let winningNumbers = JSON.parse(localStorage.getItem('winningNumbers')) || {};
+        let plays = [];
+
+        function addPlay() {
+            const playType = document.getElementById('playType').value;
+            const playNumber = document.getElementById('playNumber').value;
+            const price = parseFloat(document.getElementById('price').value);
+
+            if (playType === 'pale') {
+                const numbers = playNumber.split(' - ');
+                if (numbers.length !== 2) {
+                    alert('Para un Pale, ingrese dos números separados por " - ". Ejemplo: 12 - 34');
+                    return;
+                }
+                for (let num of numbers) {
+                    if (isNaN(num) || num.trim() === '') {
+                        alert('Ingrese solo números válidos para el Pale.');
+                        return;
+                    }
+                }
+            } else {
+                if (isNaN(playNumber) || playNumber.trim() === '') {
+                    alert('Ingrese un número válido para la jugada simple.');
+                    return;
+                }
+            }
+
+            plays.push({ type: playType, playNumber, price });
+            displayPlays();
+        }
+
+        function displayPlays() {
+            const playsDiv = document.getElementById('plays');
+            playsDiv.innerHTML = plays.map((play, index) => `
+                <div class="play-entry">
+                    <p>Jugada ${play.type === 'pale' ? 'Pale' : 'Simple'}: ${play.playNumber} - Precio: RD$${play.price.toFixed(2)}</p>
+                    <button class="btn btn-danger" onclick="removePlay(${index})">Eliminar</button>
+                </div>
+            `).join('');
+        }
+
+        function removePlay(index) {
+            plays.splice(index, 1);
+            displayPlays();
+        }
+
+        function generateTicket() {
+            const lotteryType = document.getElementById('lotteryType').value;
+
+            if (plays.length === 0) {
+                alert('Debe agregar al menos una jugada.');
+                return;
+            }
+
+            const ticketCode = 'T-' + Date.now();
+            const totalPrice = plays.reduce((total, play) => total + play.price, 0);
+
+            const ticket = {
+                code: ticketCode,
+                lotteryType: lotteryType,
+                plays: plays,
+                totalPrice: totalPrice,
+                purchaseTime: new Date().toISOString(),
+            };
+
+            transactions.push(ticket);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+
+            document.getElementById('ticket').innerHTML = `
+                <div class="ticket">
+                    <h3>Ticket de Lotería</h3>
+                    <p><strong>Código:</strong> ${ticket.code}</p>
+                    <p><strong>Tipo de Lotería:</strong> ${ticket.lotteryType}</p>
+                    ${ticket.plays.map(play => `
+                        <p>${play.type === 'pale' ? 'Pale' : 'Simple'}: ${play.playNumber} - Precio: RD$${play.price.toFixed(2)}</p>
+                    `).join('')}
+                    <p><strong>Total:</strong> RD$${ticket.totalPrice.toFixed(2)}</p>
+                    <p class="ticket-footer">Buena Suerte</p>
+                </div>
+            `;
+            plays = [];
+            displayPlays();
+        }
+
+        function printTicket() {
+            const ticketDiv = document.getElementById('ticket');
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Imprimir Ticket</title></head><body >');
+            printWindow.document.write(ticketDiv.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function setWinningNumbers() {
+            const lotteryType = document.getElementById('winningLotteryType').value;
+            const firstPrize = document.getElementById('firstPrize').value;
+            const secondPrize = document.getElementById('secondPrize').value;
+            const thirdPrize = document.getElementById('thirdPrize').value;
+
+            if (!firstPrize || !secondPrize || !thirdPrize) {
+                alert('Por favor, ingrese todos los números ganadores.');
+                return;
+            }
+
+            winningNumbers[lotteryType] = {
+                firstPrize,
+                secondPrize,
+                thirdPrize
+            };
+
+            localStorage.setItem('winningNumbers', JSON.stringify(winningNumbers));
+
+            alert('Números ganadores guardados exitosamente.');
+        }
+
+        function viewInventory() {
+            const inventoryDiv = document.getElementById('inventory');
+            inventoryDiv.innerHTML = Object.keys(inventory).length === 0 ?
+                '<p>No hay artículos en el inventario.</p>' :
+                '<ul>' + Object.keys(inventory).map(key => `<li>${key}: ${inventory[key]}</li>`).join('') + '</ul>';
+        }
+
+        function viewTransactionHistory() {
+            const transactionHistoryDiv = document.getElementById('transactionHistory');
+            transactionHistoryDiv.innerHTML = transactions.length === 0 ?
+                '<p>No hay transacciones registradas.</p>' :
+                '<ul>' + transactions.map(transaction => `
+                    <li>
+                        <p><strong>Código de Ticket:</strong> ${transaction.code}</p>
+                        <p><strong>Tipo de Lotería:</strong> ${transaction.lotteryType}</p>
+                        ${transaction.plays.map(play => `
+                            <p>${play.type === 'pale' ? 'Pale' : 'Simple'}: ${play.playNumber} - Precio: RD$${play.price.toFixed(2)}</p>
+                        `).join('')}
+                        <p><strong>Total:</strong> RD$${transaction.totalPrice.toFixed(2)}</p>
+                        <p><strong>Fecha de Compra:</strong> ${new Date(transaction.purchaseTime).toLocaleString()}</p>
+                    </li>
+                `).join('') + '</ul>';
+        }
+
+        function viewSalesAndPaymentsByRange() {
+            const startDateInput = document.getElementById('salesStartDate').value;
+            const endDateInput = document.getElementById('salesEndDate').value;
+            const salesAndPaymentsDiv = document.getElementById('salesAndPayments');
+
+            if (!startDateInput || !endDateInput) {
+                alert('Por favor, seleccione ambas fechas.');
+                return;
+            }
+
+            const startDate = new Date(startDateInput + 'T00:00:00');
+            const endDate = new Date(endDateInput + 'T23:59:59');
+
+            // Validar rango de fechas
+            if (startDate > endDate) {
+                alert('La fecha de inicio no puede ser mayor que la fecha de fin.');
+                return;
+            }
+
+            let totalSales = 0;
+            let totalPayments = 0;
+
+            transactions.forEach(transaction => {
+                const purchaseDate = new Date(transaction.purchaseTime);
+                if (purchaseDate >= startDate && purchaseDate <= endDate) {
+                    totalSales += transaction.totalPrice;
+                    if (transaction.paid) {
+                        totalPayments += transaction.totalPrice;
+                    }
+                }
+            });
+
+            salesAndPaymentsDiv.innerHTML = `
+                <p><strong>Total de Ventas:</strong> RD$${totalSales.toFixed(2)}</p>
+                <p><strong>Total de Pagos:</strong> RD$${totalPayments.toFixed(2)}</p>
+            `;
+        }
+
+        function payTicket() {
+            const ticketCode = document.getElementById('ticketCode').value;
+            const paymentResultDiv = document.getElementById('paymentResult');
+            
+            const transaction = transactions.find(t => t.code === ticketCode);
+            if (transaction) {
+                transaction.paid = true;
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                paymentResultDiv.innerHTML = `<p>El ticket con código ${ticketCode} ha sido marcado como pagado.</p>`;
+            } else {
+                paymentResultDiv.innerHTML = `<p>No se encontró el ticket con código ${ticketCode}.</p>`;
+            }
+        }
+
+        function sendSalesSummaryEmail() {
+            alert('Esta función aún no está implementada. Envío de correos electrónicos se debe manejar a través del backend o servicios de terceros.');
+        }
+    </script>
+</body>
+</html>
